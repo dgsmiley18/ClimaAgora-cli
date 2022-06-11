@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium;
 using System.Text;
-using OpenQA.Selenium.Interactions;
 
 public class Program
 {
@@ -19,10 +19,8 @@ public class Program
         options.AddArguments("headless");
         options.AddArgument("--disable-logging");
         options.AddArgument("--log-level=3");
+        options.AddArgument("--blink-settings=imagesEnabled=false");
         var driver = new EdgeDriver(service, options);
-        
-        driver.Navigate().GoToUrl("https://www.google.com/");
-        Thread.Sleep(2000);
         
         //Usuario digita o estado
         Console.WriteLine("Digite o nome do seu Estado/Cidade: ");
@@ -31,19 +29,12 @@ public class Program
         try
         {
             //Busca pelo estado e navega até ele
-            var buscar = driver.FindElement(By.XPath("/html/body/div[1]/div[3]/form/div[1]/div[1]/div[1]/div/div[2]/input"));
-            var botao = driver.FindElement(By.XPath("/html/body/div[1]/div[3]/form/div[1]/div[1]/div[3]/center/input[1]"));
-            buscar.SendKeys("clima agora " + estado);
-            Actions actions = new Actions(driver);
-            actions.MoveToElement(botao)
-                .Click()
-                .Build()
-                .Perform();
-            //botao.Click();
-            Thread.Sleep(2000);
+            driver.Navigate().GoToUrl("https://www.google.com/search?q=clima+agora+" + estado
+                .ToLower()   
+                .Replace(" ","+"));
+            Thread.Sleep(500);
 
             //Pegar as informações do tempo
-
             var cidadenome = driver.FindElement(By.XPath("//*[@id='wob_loc']")).Text;
             var tempmin = driver.FindElement(By.XPath("//*[@id='wob_dp']/div[1]/div[3]/div[2]/span[1]")).Text;
             var tempmax = driver.FindElement(By.XPath("//*[@id='wob_dp']/div[1]/div[3]/div[1]/span[1]")).Text;
@@ -55,6 +46,7 @@ public class Program
             var tempo = driver.FindElement(By.XPath("//*[@id='wob_dts']")).Text;
 
             Console.Clear();
+            
             //Imprimir as informações
             Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine($"Temperatura: {temperatura}°C   🏙 Cidade: {cidadenome}");
@@ -64,6 +56,7 @@ public class Program
             Console.WriteLine("Umidade: " + umidade);
             Console.WriteLine("Situação: " + infohoje);
             Console.WriteLine(tempo);
+            Console.ReadKey();
         }
         //Caso não encontre a cidade ou estado
         catch (Exception e)
